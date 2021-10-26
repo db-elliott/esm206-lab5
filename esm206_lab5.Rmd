@@ -76,8 +76,56 @@ Is there a significant difference in mean heights for oak and pine trees?
 trees_t <- t.test(oak_trees, pine_trees)
 ```
 
-The p-value of `r round(trees_t$p.value, 3)` means that, if these were drawn from populations with the same mean, there is a `r round(trees_t$p.value, 3)*100`% chance of finding sample means *at least as different as those originally found*. This probability is so low that we reject the null hypothesis.
+The p-value of `r round(trees_t$p.value, 3)` means that, if these were drawn from populations with the same mean, there is a `r round(trees_t$p.value, 3)*100`% chance of finding sample means *at least as different as those originally found* by random chance if they were drawn from populations with the same mean height.
 
+## Example 2 ##
 
+Use the 'mpg' dataset to compare city gas mileage for SUVs and compact cars.
 
-**
+```{r}
+
+#Create a subset called compact_suv that only contains observations where the class is compact OR SUV
+
+compact_suv <- mpg %>% 
+  filter(class %in% c("compact", "suv"))
+```
+
+Explore Data
+
+```{r}
+
+ggplot(data = compact_suv, aes(x= cty)) +
+  geom_histogram(bins = 12) +
+  facet_wrap(~ class)
+
+ggplot(data = compact_suv, aes(sample = cty)) +
+  geom_qq() + 
+  facet_wrap(~ class)
+```
+
+```{r}
+
+car_stats <- compact_suv %>% 
+  group_by(class) %>% 
+  summarize(mean_city = round(mean(cty), 1),
+            sd_city = round(sd(cty), 1),
+            sample_size = n()) 
+car_stats 
+```
+
+```{r}
+ 
+compact_sample <- compact_suv %>% 
+  filter(class == "compact") %>% 
+  pull(cty)
+
+suv_sample <- compact_suv %>% 
+  filter(class == "suv") %>% 
+  pull(cty)
+
+cars_t <- t.test(compact_sample, suv_sample)
+```
+
+Stats speak: Reject the null hypothesis of equal mean city gas mileage
+
+Mean gas mileage for compact cars and SUVs differs significantly (t(`r round(cars_t$parameter, 1)`) = `r round(cars_t$statistic, 1)`, p < 0,001, $\alpha$ = 0.05).
